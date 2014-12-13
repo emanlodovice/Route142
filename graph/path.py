@@ -1,3 +1,5 @@
+import copy
+
 class Path(object):
 
     def __init__(self, source_vertex, destination_vertex):
@@ -18,4 +20,10 @@ class Path(object):
             self.total_weight)
 
     def merge_path(self, path):
-        pass
+        temp = copy.deepcopy(self)
+        temp.destination = path.destination
+        temp.total_weight = self.total_weight + path.total_weight
+        for i in path.path[1:]:
+            temp.path.append(i)
+        return temp
+

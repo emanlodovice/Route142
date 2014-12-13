@@ -5,7 +5,7 @@ from path import Path
 
 @Singleton
 class Graph(object):
-    
+
     def __init__(self):
         self._M = {}
         self._vertices = {}
@@ -35,9 +35,28 @@ class Graph(object):
 
         print self._M
 
+    def floyd_algorithm(self):
+        for i in self._vertices:
+            for j in self._vertices:
+                for k in self._vertices:
+                    if i != j:
+                        a = self._M[j][k].total_weight
+                        b = self._M[j][i].total_weight + self._M[i][k].total_weight
+                        if a > b:
+                            c = self._M[j][i].merge_path(self._M[i][k])
+                            self._M[j][k] = c
+
+            print self._M
 
 g = Graph.get_instance()
+g.add_vertex(1)
 g.add_vertex(2)
 g.add_vertex(3)
-g.add_edge(1,2,3,5)
+g.add_edge(1,1,2,6)
+g.add_edge(2,2,3,5)
+g.add_edge(3,3,1,20)
+g.add_edge(4,1,3,30)
+
 g.initialize_matrix()
+print ''
+g.floyd_algorithm()
