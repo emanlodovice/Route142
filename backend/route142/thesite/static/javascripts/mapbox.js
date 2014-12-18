@@ -73,6 +73,8 @@ Mapbox.prototype.road = function(data) {
     var road = L.polyline([data.start, data.end], { color: traffic_indicator_color(data.traffic) });
     var start = L.circle(data.start, 1);
     var end = L.circle(data.end, 1);
+    start.id = data.source_id;
+    end.id = data.destination_id;
     start.on('mouseover', circle_in);
     end.on('mouseover', circle_in);
     start.on('mouseout', circle_out);
@@ -95,7 +97,7 @@ Mapbox.prototype.road = function(data) {
 
     function circle_clicked(e) {
         if (self._extension_polyline) {
-            request(endpoints.path_creator, { source_id: self._extended_marker.getLatLng(), destination_id: e.latlng });
+            request(endpoints.path_creator, { source_id: self._extended_marker.id, destination_id: e.target.id });
         }
         self._map.removeLayer(self._extension_polyline);
         self._extended_marker = null;
@@ -110,6 +112,7 @@ Mapbox.prototype.establishment = function(data, force_popup, clear) {
     force_popup = params(force_popup, false);
     clear = params(clear, true);
     var marker = L.marker(data.coordinates, { icon: marker_icon(data.type) });
+    marker.id = data.id;
     var popup = L.popup({ 
         closeButton: false, 
         closeOnClick: false, 
