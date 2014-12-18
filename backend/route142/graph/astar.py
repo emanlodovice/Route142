@@ -30,6 +30,7 @@ class AStar(object):
                     has_path = True
                     destination_node = Node(v2, 
                         destination_point, current_node, connection.id)
+                    break
                 elif v2id in open_list:
                     node = open_list[v2id]
                     if node.g_value > current_node.g_value+connection.distance:
@@ -39,6 +40,8 @@ class AStar(object):
                     open_list[v2id] = Node(v2, 
                         destination_point, current_node, connection.id,
                         current_node.g_value + connection.distance)
+            if has_path:
+                break
 
         if has_path:
             path = []

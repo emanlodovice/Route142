@@ -3,7 +3,7 @@
 }
 
 .mapbox-popup .leaflet-popup-content {
-    font: normal 1.4rem/1 "Open Sans";
+    font: normal 1.4rem/1 "Open Sans", "OpenSans";
     padding: 14px 15px;
     cursor: pointer;
     -webkit-user-select: none;

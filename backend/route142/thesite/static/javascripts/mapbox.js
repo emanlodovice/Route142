@@ -14,6 +14,7 @@ function Mapbox(selector) {
     var self = this;
     this.on = this._map.on;
     this._features = [];
+    this._extras = [];
     this._searching = false;
     this._extended_marker = null;
     this._extension_polyline = null;
@@ -81,6 +82,9 @@ Mapbox.prototype.clear = function() {
     for (var i in this._endpoints) {
         this._map.removeLayer(this._endpoints[i]);
     }
+    for (var i in this._extras) {
+        this._map.removeLayer(this._extras[i]);
+    }
     this._features = [];
     this._endpoints = [];
 };
@@ -139,6 +143,7 @@ Mapbox.prototype.establishment = function(data, force_popup, clear) {
         offset: [0, -22], 
         className: 'mapbox-popup'
     }).setContent(data.name + ' (' + data.id + ')');
+    this._extras.push(popup);
     if (force_popup) {
         popup.setLatLng(marker.getLatLng());
         this._map.addLayer(popup);

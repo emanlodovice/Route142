@@ -22,6 +22,6 @@ function path(source, destination) {
         destination: destination
     }, function(data) {
         map._searching = true;
-        map.display(data);
+        map.display(data, true, undefined, true);
     });
 }
