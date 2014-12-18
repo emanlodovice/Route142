@@ -115,3 +115,22 @@ class GetPathView(View):
             'traffic': 'light'
         }
         return data
+
+
+class AddConnectionView(View):
+
+    def get(self, *args, **kwargs):
+        data = json.loads(self.request.GET['data'])
+        source_id = data['source_id']
+        destination_id = data['destination_id']
+
+        source = Point.objects.get(pk=source_id)
+        destination = Point.objects.get(pk=destination_id)
+
+        if not (Connection.objects.filter(vertex1=source, vertex2=destination) 
+                and Connection.objects.filter(vertex1=destination, vertex2=source,
+                oneway=False)):
+            Connection.objects.create(vertex1=source, vertex2=destination,
+                oneway=False)
+            return HttpResponse("true")
+        return HttpResponse("false")
