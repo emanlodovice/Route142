@@ -42,6 +42,8 @@
         <div id="search">
             <form>
                 <input type="text" name="search" placeholder="Search..." autocomplete="off">
+                <input type="hidden" id="source_name" value="0" autocomplete="off">
+                <input type="hidden" id="source_" value="0" autocomplete="off">
             </form>
             <button>
                 <img src="{% static 'search.png' %}" width="35%">
@@ -82,6 +84,9 @@
                         $('#search #suggestion').empty();
                         data.forEach(function(entry) {
                             ent = "<p class='loc_name'>"+entry.name+"</p>";
+                            if ($("#search form #source_").val() !== "0") {
+                                ent += "<p class='loc_name_path' data-id='"+entry.id+"'>"+$("#search form #source_name").val()+" to :"+entry.name+"</p>";
+                            }
                             $('#search #suggestion').append(ent);
                         });
                     });                    
@@ -93,6 +98,11 @@
                 var suggest_query = $(this).text();
                 $("#search form input").val(suggest_query);
                 search(suggest_query);
+            }).on("click","p.loc_name_path", function() {
+                console.log($("#search form #source_").val(),$(this).data('id'));
+                $('#search #suggestion').empty();
+                path($("#search form #source_").val(), $(this).data('id'));
+                $("#search form #source_").val("0");
             });            
             
             $("#search button").click(function() {

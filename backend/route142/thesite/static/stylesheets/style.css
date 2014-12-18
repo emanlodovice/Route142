@@ -106,7 +106,6 @@
     text-align: left;
     pointer-events:auto;
     display: block;
-    height: 200px;
     width: 520px;
     overflow-x: hidden;
     overflow-y: auto;
@@ -119,6 +118,7 @@
     width: 100%;
     border-bottom: 2px dashed gray;
     cursor: pointer;
+    overflow-y: auto;
 }
 #search #suggestion p:hover{
     background: #64b5f6;
