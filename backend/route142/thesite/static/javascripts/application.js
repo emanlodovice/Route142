@@ -10,6 +10,6 @@ function search(query) {
 function path(source, destination) {
     request(endpoints.shortest_path, { source: source, destination: destination }, function(data) {
         map._searching = true;
-        map.display(data);
+        map.display(data, true, undefined, true);
     });
 }
