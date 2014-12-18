@@ -6,11 +6,7 @@
         <link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css">
         <link rel="stylesheet" href="stylesheets/application.css">
         <link rel="stylesheet" href="stylesheets/mapbox.css">
-        <link rel="stylesheet" href="stylesheets/modal.css">
-        <link rel="stylesheet" type="text/css" href="stylesheets/jquery-ui.structure.min.css">
-        <link rel="stylesheet" type="text/css" href="stylesheets/jquery-ui.theme.min.css">
-        <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" media="all" href="stylesheets/style.css">
+        <link rel="stylesheet" href="stylesheets/style.css">
         <script>
             // BACKEND SHOULD DEFINE THESE
             var endpoints = {};
@@ -33,24 +29,15 @@
             </div>
         </div>
 
-        <div id="search-container">
-            <form id="search-form" class="form-inline">
-                <div class="form-group">
-                    <div id="search-alert" class="alert alert-success hidden" role="alert">
-                        <strong>No such location exists! :(</strong>
-                    </div>
-                    <input type="text" id="search-input" class="input-lg form-control" name="search-input"/>
-                    <button type="submit" class="btn btn-lg btn-primary">Go!</button>
-                </div>
+        <div id="search">
+            <form>
+                <input type="text" name="search" placeholder="Search...">
             </form>
+            <button>
+                <img src="search.png" width="35%">
+            </button>
         </div>
 
-        <div id="map"></div>
-
-        <script type="text/javascript" src="javascripts/jquery-1.11.0.js"></script>
-        <script type="text/javascript" src="javascripts/jquery-ui.min.js"></script>
-        <script type="text/javascript" src="javascripts/bootstrap.min.js"></script>
-        <script type="text/javascript" src="javascripts/default.js"></script>
         <script src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
         <script src="javascripts/mapbox.js"></script>
@@ -58,6 +45,23 @@
         <script type="text/javascript">
             $("#modal .close").click(function() {
                 $(this).parent().fadeOut();
+            });
+
+            click = 0;
+            $("#search button").click(function() {
+                if (click == 0) {
+                    click = 1;
+                    $("form input").animate({
+                        padding: 10,
+                        width: 500
+                    });
+                } else {
+                    click = 0;
+                    $("form input").animate({
+                        padding: "10px 0",
+                        width: 0
+                    });
+                }
             });
         </script>
     </body>

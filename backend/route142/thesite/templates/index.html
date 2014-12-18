@@ -7,13 +7,16 @@
         <title>Route142</title>
         <link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css">
         <link rel="stylesheet" href="{% static 'stylesheets/application.css' %}">
+        <link rel="stylesheet" href="{% static 'stylesheets/style.css' %}">
+        <link rel="stylesheet" href="{% static 'stylesheets/modal.css' %}">
         <link rel="stylesheet" href="{% static 'stylesheets/mapbox.css' %}">
         <script>
             // BACKEND SHOULD DEFINE THESE
             var endpoints = {
                 bounded_query: '/near-points/',
                 information_query: '/query/',
-                shortest_path: '/get-path/'
+                shortest_path: '/get-path/',
+                suggest: '/suggest/'
             };
             var assets = '{{ STATIC_URL }}';
         </script>
@@ -22,9 +25,100 @@
     <body>
         <div id="map"></div>
 
+        <div id="modal">
+            <div class="close">&times;</div>
+            <div class="left">
+                <img src="{% static 'sample.jpg' %}" alt="Name of place">
+            </div>
+            <div class="right">
+                <h1 class="dotdot">Cut the cheese bavarian bergkase cottage cheese.</h1>
+                <div class="description">
+                    <p>Cut the cheese bavarian bergkase cottage cheese. Cheese and biscuits stilton cauliflower cheese cut the cheese brie rubber cheese red leicester cheese and biscuits. Cheeseburger cheesy grin cheese and wine squirty cheese everyone loves pecorino pecorino lancashire. Melted cheese rubber cheese hard cheese halloumi roquefort cheeseburger cheesy grin cheesy grin. Red leicester fondue bocconcini.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="search">
+            <form>
+                <input type="text" name="search" placeholder="Search..." autocomplete="off">
+            </form>
+            <button>
+                <img src="{% static 'search.png' %}" width="35%">
+            </button>
+            <div id="suggestion">
+
+            </div>
+        </div>
+
         <script src="{% static 'javascripts/jquery.js' %}"></script>
         <script src="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js"></script>
         <script src="{% static 'javascripts/mapbox.js' %}"></script>
         <script src="{% static 'javascripts/application.js' %}"></script>
+        <script type="text/javascript">
+            $("#modal .close").click(function() {
+                $(this).parent().fadeOut();
+            });
+
+            click = 0;
+            $('form').submit(function(e) {
+                e.preventDefault();
+                $("#search button").click();    
+            });
+            $("#search").on( "keyup","form input", function(event) {
+                e = event.keyCode || event.which;
+                var len_search = $("#search form input").val().length;
+                if (len_search >= 5 && e != 13) {
+                    var suggest_query = $("#search form input").val().trim();
+                    request(endpoints.suggest, { query: suggest_query }, function(data) {
+                        function compare(a,b) {
+                          if (a.name.length < b.name.length)
+                             return 1;
+                          if (a.name.length > b.name.length)
+                            return -1;
+                          return 0;
+                        }
+                        data.sort(compare);                        
+                        $('#search #suggestion').empty();
+                        data.forEach(function(entry) {
+                            ent = "<p class='loc_name'>"+entry.name+"</p>";
+                            $('#search #suggestion').append(ent);
+                        });
+                    });                    
+                } else {
+                    $('#search #suggestion').empty();
+                }            
+            }).on("click","p.loc_name", function() {
+                $('#search #suggestion').empty();
+                var suggest_query = $(this).text();
+                $("#search form input").val(suggest_query);
+                search(suggest_query);
+            });            
+            
+            $("#search button").click(function() {
+                if (click == 0) {
+                    $(this).css('background-color','#0091ff');
+                    $("#search form input").focus();
+                    click = 1;
+                    $("form input").animate({
+                        padding: 10,
+                        width: 500
+                    });
+                } else {
+                    click = 0;
+                    var flag = $("#search form input").val().length > 0? 1:0;
+                    if (flag == 1) {
+                        search($("#search form input").val().trim());
+                    } else {
+                        $(this).css('background-color','#64b5f6');
+                        $("form input").animate({
+                            padding: "10px 0",
+                            width: 0
+                        });
+
+                    }
+                }
+            });
+        </script>        
     </body>
 </html>
+
