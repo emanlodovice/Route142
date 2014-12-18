@@ -7,13 +7,20 @@ function Mapbox(selector) {
     var element = document.querySelector(selector);
     this._map = L.mapbox.map(element, 'arnelleablane.kd50de5h', {
         accessToken: 'pk.eyJ1IjoiYXJuZWxsZWFibGFuZSIsImEiOiI2QW5EWXRjIn0.CH2zHC1Stgj5-vXXfPzmgQ',
-        maxBounds: mapBounds
+        maxBounds: mapBounds,
     });
+    this._map.setZoom(20);
 
     var self = this;
     this.on = this._map.on;
     this._features = [];
     this._searching = false;
+    this._extended_marker = null;
+    this._extension_polyline = null;
+
+    // remove later
+    this._endpoints = [];
+    // end of remove later
 
     this._map.on('moveend', function(e) {
         if (!self._searching) {
@@ -23,10 +30,40 @@ function Mapbox(selector) {
 
     $(document).on('keyup', function(e) {
         if (e.keyCode === 27) {
+            if (self._extended_marker) {
+                self._map.removeLayer(self._extension_polyline);
+                self._extended_marker = null;
+                self._extension_polyline = null;
+            }
             self._searching = false;
             self.populate.call(self);
         }
     });
+
+    this._map.on('mousemove', function(e) {
+        if (self._extension_polyline) {
+            self._extension_polyline.setLatLngs([self._extended_marker.getLatLng(), e.latlng]);
+        }
+    });
+
+    // remove later
+    this._map.on('click', function(e) {
+        if (self._extension_polyline) {
+            var target = null;
+            for (var i = 0; i < self._endpoints.length; i++) {
+                if (e.latlng.distanceTo(self._endpoints[i].getLatLng()) < 1) {
+                    target = self._endpoints[i];
+                }
+            }
+            request(endpoints.path_creator, { source_id: self._extended_marker.id, destination_id: target.id }, function() {
+                self.populate();
+            });
+            self._map.removeLayer(self._extension_polyline);
+            self._extended_marker = null;
+            self._extension_polyline = null;
+        }
+    });
+    // end of remove later     
 }
 
 Mapbox.prototype.center = function(coordinates) {
@@ -41,7 +78,11 @@ Mapbox.prototype.clear = function() {
     for (var i in this._features) {
         this._map.removeLayer(this._features[i]);
     }
+    for (var i in this._endpoints) {
+        this._map.removeLayer(this._endpoints[i]);
+    }
     this._features = [];
+    this._endpoints = [];
 };
 
 Mapbox.prototype.populate = function() {
@@ -57,7 +98,33 @@ Mapbox.prototype.populate = function() {
 
 Mapbox.prototype.road = function(data) {
     var road = L.polyline([data.start, data.end], { color: traffic_indicator_color(data.traffic) });
-    this._map.addLayer(road);
+    var start = L.circle(data.start, 1, { className: 'mapbox-endpoints' }); // edit later
+    var end = L.circle(data.end, 1, { className: 'mapbox-endpoints' }); // edit later'
+    // remove later
+    this._endpoints.push(start);
+    this._endpoints.push(end);
+    // end of remove later
+    start.id = data.source_id;
+    end.id = data.destination_id;
+    start.on('mouseover', circle_in);
+    end.on('mouseover', circle_in);
+    start.on('mouseout', circle_out);
+    end.on('mouseout', circle_out);
+
+    var self = this;
+    function circle_in(e) {
+        if (self._extension_polyline) {
+            self._extension_polyline.setStyle({ color: 'green' });
+        }
+    }
+
+    function circle_out(e) {
+        if (self._extension_polyline) {
+            self._extension_polyline.setStyle({ color: 'red' });
+        }
+    }
+
+    this._map.addLayer(road).addLayer(start).addLayer(end); // edit later
     return road;
 };
 
@@ -65,6 +132,7 @@ Mapbox.prototype.establishment = function(data, force_popup, clear) {
     force_popup = params(force_popup, false);
     clear = params(clear, true);
     var marker = L.marker(data.coordinates, { icon: marker_icon(data.type) });
+    marker.id = data.id;
     var popup = L.popup({ 
         closeButton: false, 
         closeOnClick: false, 
@@ -75,7 +143,21 @@ Mapbox.prototype.establishment = function(data, force_popup, clear) {
         popup.setLatLng(marker.getLatLng());
         this._map.addLayer(popup);
     } else {
-        marker.bindPopup(popup).openPopup();
+        var self = this; // remove later
+        marker.bindPopup(popup);
+        marker.on('mouseover', function() {
+            marker.openPopup();
+        });
+        marker.on('mouseout', function() {
+            marker.closePopup();
+        });
+        // remove later
+        marker.on('click', function() {
+            self._extended_marker = marker;
+            self._extension_polyline = L.polyline([marker.getLatLng()], { color: 'red', lineCap: 'butt' });
+            self._map.addLayer(self._extension_polyline);
+        });
+        // end of remove later
     }
     this._map.addLayer(marker);
     return marker;

@@ -1,4 +1,5 @@
 import json
+import math
 
 from django.http import HttpResponse
 from django.views.generic import TemplateView, View
@@ -57,14 +58,17 @@ class NearPointsView(View):
         nw = data['northwest']
         se = data['southeast']
         points = Point.objects.filter(
-            lat__lte=nw[0], lat__gte=se[0], lon__gte=nw[1], lon__lte=se[1],
-            is_landmark=True).\
+            lat__lte=nw[0], lat__gte=se[0], lon__gte=nw[1], lon__lte=se[1]).\
             all()
         results_list = []
         for p in points:
-            point = {'coordinates': [p.lat, p.lon], 'name': p.name,
-                     'type': p.typ, 'is_landmark': p.is_landmark, 'id': p.pk}
-            results_list.append(point)
+            for p1 in p.connections1.all():
+                road = {'type': 'road', 'start': [p.lat, p.lon], 'end': [p1.vertex2.lat, p1.vertex2.lon], 'traffic': 'light', 'source_id': p.pk, 'destination_id': p1.vertex2.pk}
+                results_list.append(road)
+            if p.is_landmark:
+                point = {'coordinates': [p.lat, p.lon], 'name': p.name,
+                         'type': p.typ, 'is_landmark': p.is_landmark, 'id': p.pk}
+                results_list.append(point)
         return HttpResponse(json.dumps(results_list))
 
 
@@ -80,7 +84,7 @@ class GetPathView(View):
         results_list = []
         try:
             path = AStar().get_path(source, destination)
-            print len(path)
+            print path
             if len(path) > 1:
                 s = self.parse_point(Point.objects.get(pk=path[0]))
                 results_list.append(s)
@@ -95,7 +99,7 @@ class GetPathView(View):
                 s = self.parse_point(Point.objects.get(pk=path[-1]))
                 results_list.append(s)
         except Exception:
-            pass
+            print 'Fuck WALAY PATH!'
         return HttpResponse(json.dumps(results_list))
 
     def parse_point(self, point):
@@ -115,3 +119,24 @@ class GetPathView(View):
             'traffic': 'light'
         }
         return data
+
+
+class AddConnectionView(View):
+
+    def get(self, *args, **kwargs):
+        data = json.loads(self.request.GET['data'])
+        source_id = data['source_id']
+        destination_id = data['destination_id']
+
+        source = Point.objects.get(pk=source_id)
+        destination = Point.objects.get(pk=destination_id)
+
+        if not (Connection.objects.filter(vertex1=source, vertex2=destination) 
+                and Connection.objects.filter(vertex1=destination, vertex2=source,
+                oneway=False)):
+            distance = math.sqrt(math.pow(source.lat - destination.lat, 2) + \
+                math.pow(source.lon - destination.lon, 2))
+            Connection.objects.create(vertex1=source, vertex2=destination,
+                oneway=False, distance=distance)
+            return HttpResponse("true")
+        return HttpResponse("false")

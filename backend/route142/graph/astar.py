@@ -18,11 +18,17 @@ class AStar(object):
             del open_list[id]
             closed_list[id] = current_node
 
-            for connection in current_node.point.connections1.all():
+            
+            for connection in (list(current_node.point.connections1.all()) + \
+            list(current_node.point.connections2.filter(oneway=False).all())):
                 v2id = connection.vertex2.id
+                v2 = connection.vertex2
+                if v2id == current_node.id:
+                    v2id = connection.vertex1.id
+                    v2 = connection.vertex1
                 if v2id == destination_point.id:
                     has_path = True
-                    destination_node = Node(connection.vertex2, 
+                    destination_node = Node(v2, 
                         destination_point, current_node, connection.id)
                 elif v2id in open_list:
                     node = open_list[v2id]
@@ -30,7 +36,7 @@ class AStar(object):
                         node.parent = current_node
                         node.g_value = current_node.g_value+connection.distance
                 elif v2id not in closed_list:
-                    open_list[v2id] = Node(connection.vertex2, 
+                    open_list[v2id] = Node(v2, 
                         destination_point, current_node, connection.id,
                         current_node.g_value + connection.distance)
 
