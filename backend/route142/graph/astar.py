@@ -18,7 +18,8 @@ class AStar(object):
             del open_list[id]
             closed_list[id] = current_node
 
-            for connection in current_node.point.connections1.all():
+            for connection in (list(current_node.point.connections1.all()) + \
+            list(current_node.point.connections2.filter(oneway=False).all())):
                 v2id = connection.vertex2.id
                 if v2id == destination_point.id:
                     has_path = True
