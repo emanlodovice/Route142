@@ -7,13 +7,16 @@ function Mapbox(selector) {
     var element = document.querySelector(selector);
     this._map = L.mapbox.map(element, 'arnelleablane.kd50de5h', {
         accessToken: 'pk.eyJ1IjoiYXJuZWxsZWFibGFuZSIsImEiOiI2QW5EWXRjIn0.CH2zHC1Stgj5-vXXfPzmgQ',
-        maxBounds: mapBounds
+        maxBounds: mapBounds,
     });
+    this._map.setZoom(20);
 
     var self = this;
     this.on = this._map.on;
     this._features = [];
     this._searching = false;
+    this._extended_marker = null;
+    this._extension_polyline = null;
 
     this._map.on('moveend', function(e) {
         if (!self._searching) {
@@ -23,8 +26,19 @@ function Mapbox(selector) {
 
     $(document).on('keyup', function(e) {
         if (e.keyCode === 27) {
+            if (self._extended_marker) {
+                self._map.removeLayer(self._extension_polyline);
+                self._extended_marker = null;
+                self._extension_polyline = null;
+            }
             self._searching = false;
             self.populate.call(self);
+        }
+    });
+
+    this._map.on('mousemove', function(e) {
+        if (self._extension_polyline) {
+            self._extension_polyline.setLatLngs([self._extended_marker.getLatLng(), e.latlng]);
         }
     });
 }
@@ -57,7 +71,38 @@ Mapbox.prototype.populate = function() {
 
 Mapbox.prototype.road = function(data) {
     var road = L.polyline([data.start, data.end], { color: traffic_indicator_color(data.traffic) });
-    this._map.addLayer(road);
+    var start = L.circle(data.start, 1);
+    var end = L.circle(data.end, 1);
+    start.on('mouseover', circle_in);
+    end.on('mouseover', circle_in);
+    start.on('mouseout', circle_out);
+    end.on('mouseout', circle_out);
+    start.on('click', circle_clicked);
+    end.on('click', circle_clicked);
+
+    var self = this;
+    function circle_in(e) {
+        if (self._extension_polyline) {
+            self._extension_polyline.setStyle({ color: 'green' });
+        }
+    }
+
+    function circle_out(e) {
+        if (self._extension_polyline) {
+            self._extension_polyline.setStyle({ color: 'red' });
+        }
+    }
+
+    function circle_clicked(e) {
+        if (self._extension_polyline) {
+            request(endpoints.path_creator, { source_id: self._extended_marker.getLatLng(), destination_id: e.latlng });
+        }
+        self._map.removeLayer(self._extension_polyline);
+        self._extended_marker = null;
+        self._extension_polyline = null;
+    }
+
+    this._map.addLayer(road).addLayer(start).addLayer(end);
     return road;
 };
 
@@ -75,7 +120,19 @@ Mapbox.prototype.establishment = function(data, force_popup, clear) {
         popup.setLatLng(marker.getLatLng());
         this._map.addLayer(popup);
     } else {
-        marker.bindPopup(popup).openPopup();
+        var self = this;
+        marker.bindPopup(popup);
+        marker.on('mouseover', function() {
+            marker.openPopup();
+        });
+        marker.on('mouseout', function() {
+            marker.closePopup();
+        });
+        marker.on('click', function() {
+            self._extended_marker = marker;
+            self._extension_polyline = L.polyline([marker.getLatLng()], { color: 'red', lineCap: 'butt' });
+            self._map.addLayer(self._extension_polyline);
+        });
     }
     this._map.addLayer(marker);
     return marker;
