@@ -134,8 +134,8 @@ class AddConnectionView(View):
         if not (Connection.objects.filter(vertex1=source, vertex2=destination) 
                 and Connection.objects.filter(vertex1=destination, vertex2=source,
                 oneway=False)):
-            distance = math.sqrt((s.lat - d.lat)*(s.lat - d.lat) + (
-                s.lon - d.lon)*(s.lon - d.lon))
+            distance = math.sqrt(math.pow(source.lat - destination.lat, 2) + \
+                math.pow(source.lon - destination.lon, 2))
             Connection.objects.create(vertex1=source, vertex2=destination,
                 oneway=False, distance=distance)
             return HttpResponse("true")
