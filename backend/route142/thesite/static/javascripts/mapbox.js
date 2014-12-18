@@ -18,6 +18,10 @@ function Mapbox(selector) {
     this._extended_marker = null;
     this._extension_polyline = null;
 
+    // remove later
+    this._endpoints = [];
+    // end of remove later
+
     this._map.on('moveend', function(e) {
         if (!self._searching) {
             self.populate.call(self);
@@ -41,6 +45,25 @@ function Mapbox(selector) {
             self._extension_polyline.setLatLngs([self._extended_marker.getLatLng(), e.latlng]);
         }
     });
+
+    // remove later
+    this._map.on('click', function(e) {
+        if (self._extension_polyline) {
+            var target = null;
+            for (var i = 0; i < self._endpoints.length; i++) {
+                if (e.latlng.distanceTo(self._endpoints[i].getLatLng()) < 1) {
+                    target = self._endpoints[i];
+                }
+            }
+            request(endpoints.path_creator, { source_id: self._extended_marker.id, destination_id: target.id }, function() {
+                self.populate();
+            });
+            self._map.removeLayer(self._extension_polyline);
+            self._extended_marker = null;
+            self._extension_polyline = null;
+        }
+    });
+    // end of remove later     
 }
 
 Mapbox.prototype.center = function(coordinates) {
@@ -55,7 +78,11 @@ Mapbox.prototype.clear = function() {
     for (var i in this._features) {
         this._map.removeLayer(this._features[i]);
     }
+    for (var i in this._endpoints) {
+        this._map.removeLayer(this._endpoints[i]);
+    }
     this._features = [];
+    this._endpoints = [];
 };
 
 Mapbox.prototype.populate = function() {
@@ -71,16 +98,18 @@ Mapbox.prototype.populate = function() {
 
 Mapbox.prototype.road = function(data) {
     var road = L.polyline([data.start, data.end], { color: traffic_indicator_color(data.traffic) });
-    var start = L.circle(data.start, 1);
-    var end = L.circle(data.end, 1);
+    var start = L.circle(data.start, 1, { className: 'mapbox-endpoints' }); // edit later
+    var end = L.circle(data.end, 1, { className: 'mapbox-endpoints' }); // edit later'
+    // remove later
+    this._endpoints.push(start);
+    this._endpoints.push(end);
+    // end of remove later
     start.id = data.source_id;
     end.id = data.destination_id;
     start.on('mouseover', circle_in);
     end.on('mouseover', circle_in);
     start.on('mouseout', circle_out);
     end.on('mouseout', circle_out);
-    start.on('click', circle_clicked);
-    end.on('click', circle_clicked);
 
     var self = this;
     function circle_in(e) {
@@ -95,16 +124,7 @@ Mapbox.prototype.road = function(data) {
         }
     }
 
-    function circle_clicked(e) {
-        if (self._extension_polyline) {
-            request(endpoints.path_creator, { source_id: self._extended_marker.id, destination_id: e.target.id });
-        }
-        self._map.removeLayer(self._extension_polyline);
-        self._extended_marker = null;
-        self._extension_polyline = null;
-    }
-
-    this._map.addLayer(road).addLayer(start).addLayer(end);
+    this._map.addLayer(road).addLayer(start).addLayer(end); // edit later
     return road;
 };
 
@@ -123,7 +143,7 @@ Mapbox.prototype.establishment = function(data, force_popup, clear) {
         popup.setLatLng(marker.getLatLng());
         this._map.addLayer(popup);
     } else {
-        var self = this;
+        var self = this; // remove later
         marker.bindPopup(popup);
         marker.on('mouseover', function() {
             marker.openPopup();
@@ -131,11 +151,13 @@ Mapbox.prototype.establishment = function(data, force_popup, clear) {
         marker.on('mouseout', function() {
             marker.closePopup();
         });
+        // remove later
         marker.on('click', function() {
             self._extended_marker = marker;
             self._extension_polyline = L.polyline([marker.getLatLng()], { color: 'red', lineCap: 'butt' });
             self._map.addLayer(self._extension_polyline);
         });
+        // end of remove later
     }
     this._map.addLayer(marker);
     return marker;
