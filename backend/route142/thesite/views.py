@@ -84,7 +84,7 @@ class GetPathView(View):
         results_list = []
         try:
             path = AStar().get_path(source, destination)
-            print len(path)
+            print path
             if len(path) > 1:
                 s = self.parse_point(Point.objects.get(pk=path[0]))
                 results_list.append(s)
@@ -99,7 +99,7 @@ class GetPathView(View):
                 s = self.parse_point(Point.objects.get(pk=path[-1]))
                 results_list.append(s)
         except Exception:
-            pass
+            print 'Fuck WALAY PATH!'
         return HttpResponse(json.dumps(results_list))
 
     def parse_point(self, point):
