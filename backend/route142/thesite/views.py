@@ -1,4 +1,5 @@
 import json
+import math
 
 from django.http import HttpResponse
 from django.views.generic import TemplateView, View
@@ -130,7 +131,9 @@ class AddConnectionView(View):
         if not (Connection.objects.filter(vertex1=source, vertex2=destination) 
                 and Connection.objects.filter(vertex1=destination, vertex2=source,
                 oneway=False)):
+            distance = math.sqrt((s.lat - d.lat)*(s.lat - d.lat) + (
+                s.lon - d.lon)*(s.lon - d.lon))
             Connection.objects.create(vertex1=source, vertex2=destination,
-                oneway=False)
+                oneway=False, distance=distance)
             return HttpResponse("true")
         return HttpResponse("false")
