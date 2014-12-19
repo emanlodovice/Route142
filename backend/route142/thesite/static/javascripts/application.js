@@ -7,8 +7,6 @@ function search(query) {
         map._searching = true;
         if (data.length === 1) {
             map.display(data[0])
-            $("#search form #source_").val(data[0].id);
-            $("#search form #source_name").val(data[0].name);
         } else {
             map.display(data, undefined, undefined, true);
         }
@@ -20,7 +18,11 @@ function path(source, destination) {
         source: source,
         destination: destination
     }, function(data) {
-        map._searching = true;
-        map.display(data, true, undefined, true);
+        if (data.length) {
+            map._searching = true;
+            map.display(data, true, undefined, true);
+        } else {
+            alert('No path found.');
+        }
     });
 }

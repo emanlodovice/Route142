@@ -59,6 +59,9 @@
         <script src="{% static 'javascripts/mapbox.js' %}"></script>
         <script src="{% static 'javascripts/application.js' %}"></script>
         <script type="text/javascript">
+            var source = null;
+            var sourcename = null;
+
             $("#modal .close").click(function() {
                 $(this).parent().fadeOut();
             });
@@ -84,9 +87,9 @@
                         data.sort(compare);                        
                         $('#search #suggestion').empty();
                         data.forEach(function(entry) {
-                            ent = "<p class='loc_name'>"+entry.name+"</p>";
-                            if ($("#search form #source_").val() !== "0") {
-                                ent += "<p class='loc_name_path' data-id='"+entry.id+"'>"+$("#search form #source_name").val()+" to :"+entry.name+"</p>";
+                            var ent = '<p class="loc_name" data-id="' + entry.id + '">' + entry.name + '</p>';
+                            if (source !== null) {
+                                ent += "<p class='loc_name_path' data-id='"+entry.id+"'>"+ sourcename +" to "+entry.name+"</p>";
                             }
                             $('#search #suggestion').append(ent);
                         });
@@ -96,14 +99,15 @@
                 }            
             }).on("click","p.loc_name", function() {
                 $('#search #suggestion').empty();
-                var suggest_query = $(this).text();
-                $("#search form input").val(suggest_query);
-                search(suggest_query);
+                $("#search form input").val($(this).text());
+                source = $(this).attr('data-id');
+                sourcename = $(this).text();
+                search(source);
             }).on("click","p.loc_name_path", function() {
-                console.log($("#search form #source_").val(),$(this).data('id'));
                 $('#search #suggestion').empty();
-                path($("#search form #source_").val(), $(this).data('id'));
-                $("#search form #source_").val("0");
+                path(source, $(this).data('id'));
+                source = null;
+                sourcename = null;
             });            
             
             $("#search button").click(function() {

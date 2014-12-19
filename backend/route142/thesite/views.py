@@ -19,7 +19,10 @@ class InfoQueryView(View):
     def get(self, *args, **kwargs):
         data = json.loads(self.request.GET['data'])
         query = data['query']
-        results = Point.objects.filter(Q(name__istartswith=query + ' ') | 
+        try:
+            results = [Point.objects.get(pk=query)]
+        except:
+            results = Point.objects.filter(Q(name__istartswith=query + ' ') | 
                                        Q(name__icontains=' ' + query + ' ') |
                                        Q(name__icontains=' ' + query) | 
                                        Q(name__iexact=query))
