@@ -1,3 +1,5 @@
+var gathering = false;
+
 // LIMIT MAP BOUNDARIES TO CEBU ISLAND ONLY
 var southWest = L.latLng(9.394871245232979, 123.277587890625);
 var northEast = L.latLng(11.35348957008566, 124.134521484375);
@@ -20,7 +22,9 @@ function Mapbox(selector) {
     this._extension_polyline = null;
 
     // remove later
-    this._endpoints = [];
+    if (gathering) {
+        this._endpoints = [];
+    }
     // end of remove later
 
     this._map.on('moveend', function(e) {
@@ -48,22 +52,24 @@ function Mapbox(selector) {
     });
 
     // remove later
-    this._map.on('click', function(e) {
-        if (self._extension_polyline) {
-            var target = null;
-            for (var i = 0; i < self._endpoints.length; i++) {
-                if (e.latlng.distanceTo(self._endpoints[i].getLatLng()) < 1) {
-                    target = self._endpoints[i];
+    if (gathering) {
+        this._map.on('click', function(e) {
+            if (self._extension_polyline) {
+                var target = null;
+                for (var i = 0; i < self._endpoints.length; i++) {
+                    if (e.latlng.distanceTo(self._endpoints[i].getLatLng()) < 1) {
+                        target = self._endpoints[i];
+                    }
                 }
+                request(endpoints.path_creator, { source_id: self._extended_marker.id, destination_id: target.id }, function() {
+                    self.populate();
+                });
+                self._map.removeLayer(self._extension_polyline);
+                self._extended_marker = null;
+                self._extension_polyline = null;
             }
-            request(endpoints.path_creator, { source_id: self._extended_marker.id, destination_id: target.id }, function() {
-                self.populate();
-            });
-            self._map.removeLayer(self._extension_polyline);
-            self._extended_marker = null;
-            self._extension_polyline = null;
-        }
-    });
+        });
+    }
     // end of remove later     
 }
 
@@ -102,14 +108,16 @@ Mapbox.prototype.populate = function() {
 
 Mapbox.prototype.road = function(data) {
     var road = L.polyline([data.start, data.end], { color: traffic_indicator_color(data.traffic) });
-    var start = L.circle(data.start, 1, { className: 'mapbox-endpoints' }); // edit later
-    var end = L.circle(data.end, 1, { className: 'mapbox-endpoints' }); // edit later'
+    var start = L.circle(data.start, 1);
+    var end = L.circle(data.end, 1);
     // remove later
-    this._endpoints.push(start);
-    this._endpoints.push(end);
+    if (gathering) {
+        this._endpoints.push(start);
+        this._endpoints.push(end);
+        start.id = data.source_id;
+        end.id = data.destination_id;
+    }
     // end of remove later
-    start.id = data.source_id;
-    end.id = data.destination_id;
     start.on('mouseover', circle_in);
     end.on('mouseover', circle_in);
     start.on('mouseout', circle_out);
@@ -128,7 +136,7 @@ Mapbox.prototype.road = function(data) {
         }
     }
 
-    this._map.addLayer(road).addLayer(start).addLayer(end); // edit later
+    this._map.addLayer(road);
     return road;
 };
 
@@ -142,13 +150,12 @@ Mapbox.prototype.establishment = function(data, force_popup, clear) {
         closeOnClick: false, 
         offset: [0, -22], 
         className: 'mapbox-popup'
-    }).setContent(data.name + ' (' + data.id + ')');
+    }).setContent(data.name);
     this._extras.push(popup);
     if (force_popup) {
         popup.setLatLng(marker.getLatLng());
         this._map.addLayer(popup);
     } else {
-        var self = this; // remove later
         marker.bindPopup(popup);
         marker.on('mouseover', function() {
             marker.openPopup();
@@ -157,11 +164,14 @@ Mapbox.prototype.establishment = function(data, force_popup, clear) {
             marker.closePopup();
         });
         // remove later
-        marker.on('click', function() {
-            self._extended_marker = marker;
-            self._extension_polyline = L.polyline([marker.getLatLng()], { color: 'red', lineCap: 'butt' });
-            self._map.addLayer(self._extension_polyline);
-        });
+        if (gathering) {
+            var self = this;
+            marker.on('click', function() {
+                self._extended_marker = marker;
+                self._extension_polyline = L.polyline([marker.getLatLng()], { color: 'red', lineCap: 'butt' });
+                self._map.addLayer(self._extension_polyline);
+            });
+        }
         // end of remove later
     }
     this._map.addLayer(marker);

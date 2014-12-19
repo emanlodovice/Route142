@@ -62,9 +62,10 @@ class NearPointsView(View):
             all()
         results_list = []
         for p in points:
-            for p1 in p.connections1.all():
-                road = {'type': 'road', 'start': [p.lat, p.lon], 'end': [p1.vertex2.lat, p1.vertex2.lon], 'traffic': 'light', 'source_id': p.pk, 'destination_id': p1.vertex2.pk}
-                results_list.append(road)
+            # UNCOMMENT LATER IF DATA GATHERING AGAIN
+            # for p1 in p.connections1.all():
+            #     road = {'type': 'road', 'start': [p.lat, p.lon], 'end': [p1.vertex2.lat, p1.vertex2.lon], 'traffic': 'light', 'source_id': p.pk, 'destination_id': p1.vertex2.pk}
+            #     results_list.append(road)
             if p.is_landmark:
                 point = {'coordinates': [p.lat, p.lon], 'name': p.name,
                          'type': p.typ, 'is_landmark': p.is_landmark, 'id': p.pk}
