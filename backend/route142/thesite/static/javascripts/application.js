@@ -7,11 +7,10 @@ function search(query) {
         map._searching = true;
         if (data.length === 1) {
             map.display(data[0])
-            console.log(data[0].id);
             $("#search form #source_").val(data[0].id);
             $("#search form #source_name").val(data[0].name);
         } else {
-            map.display(data);
+            map.display(data, undefined, undefined, true);
         }
     });
 }
