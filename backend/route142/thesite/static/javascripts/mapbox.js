@@ -1,4 +1,4 @@
-var gathering = false;
+var gathering = true;
 
 // LIMIT MAP BOUNDARIES TO CEBU ISLAND ONLY
 var southWest = L.latLng(9.394871245232979, 123.277587890625);
@@ -59,6 +59,7 @@ function Mapbox(selector) {
                 for (var i = 0; i < self._endpoints.length; i++) {
                     if (e.latlng.distanceTo(self._endpoints[i].getLatLng()) < 1) {
                         target = self._endpoints[i];
+                        break;
                     }
                 }
                 request(endpoints.path_creator, { source_id: self._extended_marker.id, destination_id: target.id }, function() {
@@ -110,6 +111,7 @@ Mapbox.prototype.road = function(data) {
     var road = L.polyline([data.start, data.end], { color: traffic_indicator_color(data.traffic) });
     var start = L.circle(data.start, 1);
     var end = L.circle(data.end, 1);
+
     // remove later
     if (gathering) {
         this._endpoints.push(start);
