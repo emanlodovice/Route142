@@ -18,11 +18,11 @@ body {
     border: 1px solid #bdbdbd;
     border-radius: 2px;
     box-shadow: 0 1px 3px rgba(40, 40, 40, 0.2);
-    padding: 15px;
 }
 
 #searchbox form {
     font-size: 0;
+    padding: 15px;
 }
 
 #searchbox input {
@@ -81,5 +81,47 @@ body {
 #searchbox button:hover:before,
 #searchbox button:active:before,
 #searchbox button:focus:before {
+    opacity: 1;
+}
+
+#searchbox ul {
+    list-style: none;
+    background-color: #ffffff;
+    padding: 7px 0;
+    margin-top: -1px;
+    border-top: 1px solid #bdbdbd;
+    box-shadow: inset 0 2px 0 0 rgba(210, 210, 210, 0.2);
+}
+
+#searchbox li {
+    position: relative;
+    font: normal 1.4rem/1.3 "Droid Sans";
+    color: #222222;
+    padding: 5px 60px 5px 24px;
+    cursor: pointer;
+}
+
+#searchbox li:hover {
+    color: #ffffff;
+    background-color: #4d90fe;
+}
+
+#searchbox li span {
+    position: absolute;
+    top: 4px;
+    right: 24px;
+    width: 20px;
+    height: 20px;
+    background: url("../images/checkbox-marked-circle-outline.svg") center center no-repeat;
+    background-size: 75% auto;
+    text-indent: -1000px;
+    overflow: hidden;
+    opacity: 0.5;
+    -webkit-transition: opacity 300ms ease;
+    -moz-transition: opacity 300ms ease;
+    transition: opacity 300ms ease;
+}
+
+#searchbox li span:hover {
     opacity: 1;
 }
