@@ -1,5 +1,3 @@
-var gathering = true;
-
 // LIMIT MAP BOUNDARIES TO CEBU ISLAND ONLY
 var southWest = L.latLng(9.394871245232979, 123.277587890625);
 var northEast = L.latLng(11.35348957008566, 124.134521484375);
@@ -18,14 +16,13 @@ function Mapbox(selector) {
     this._features = [];
     this._extras = [];
     this._searching = false;
+    this._gathering = true;
     this._extended_marker = null;
     this._extension_polyline = null;
 
-    // remove later
-    if (gathering) {
+    if (this._gathering) {
         this._endpoints = [];
     }
-    // end of remove later
 
     this._map.on('moveend', function(e) {
         if (!self._searching) {
@@ -51,8 +48,7 @@ function Mapbox(selector) {
         }
     });
 
-    // remove later
-    if (gathering) {
+    if (this._gathering) {
         this._map.on('click', function(e) {
             if (self._extension_polyline) {
                 var target = null;
@@ -71,7 +67,6 @@ function Mapbox(selector) {
             }
         });
     }
-    // end of remove later     
 }
 
 Mapbox.prototype.center = function(coordinates) {
@@ -112,14 +107,13 @@ Mapbox.prototype.road = function(data) {
     var start = L.circle(data.start, 1);
     var end = L.circle(data.end, 1);
 
-    // remove later
-    if (gathering) {
+    if (this._gathering) {
         this._endpoints.push(start);
         this._endpoints.push(end);
         start.id = data.source_id;
         end.id = data.destination_id;
     }
-    // end of remove later
+
     start.on('mouseover', circle_in);
     end.on('mouseover', circle_in);
     start.on('mouseout', circle_out);
@@ -142,11 +136,10 @@ Mapbox.prototype.road = function(data) {
     return road;
 };
 
-Mapbox.prototype.establishment = function(data, force_popup, clear) {
-    force_popup = params(force_popup, false);
-    clear = params(clear, true);
+Mapbox.prototype.establishment = function(data, force_popup) {
     var marker = L.marker(data.coordinates, { icon: marker_icon(data.type) });
     marker.id = data.id;
+
     var popup = L.popup({ 
         closeButton: false, 
         closeOnClick: false, 
@@ -154,7 +147,8 @@ Mapbox.prototype.establishment = function(data, force_popup, clear) {
         className: 'mapbox-popup'
     }).setContent(data.name);
     this._extras.push(popup);
-    if (force_popup) {
+
+    if (params(force_popup, false)) {
         popup.setLatLng(marker.getLatLng());
         this._map.addLayer(popup);
     } else {
@@ -165,8 +159,8 @@ Mapbox.prototype.establishment = function(data, force_popup, clear) {
         marker.on('mouseout', function() {
             marker.closePopup();
         });
-        // remove later
-        if (gathering) {
+
+        if (this._gathering) {
             var self = this;
             marker.on('click', function() {
                 self._extended_marker = marker;
@@ -174,7 +168,6 @@ Mapbox.prototype.establishment = function(data, force_popup, clear) {
                 self._map.addLayer(self._extension_polyline);
             });
         }
-        // end of remove later
     }
     this._map.addLayer(marker);
     return marker;
@@ -243,7 +236,7 @@ function marker_icon(type) {
     } else if (type === 'townhall') {
         filename = 'office_agency.png';
     }
-    var url = assets + 'images/' + filename;
+    var url = assets + 'images/markers/' + filename;
     return L.icon({
         iconUrl: url,
         iconRetinaUrl: url,
