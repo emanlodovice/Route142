@@ -26,22 +26,22 @@
     <body>
         <div id="map"></div>
 
-        <section id="searchbox">
+        <section id="searchbox" class="collapsed">
             <form action="#">
                 <input type="text" name="query">
                 <button>Search</button>
             </form>
-            <ul>
-                <li>University of the Philippines Cebu<span>&plus;</span></li>
-                <li>University of San Carlos<span>&plus;</span></li>
-                <li>University of San Jose Recoletos<span>&plus;</span></li>
-                <li>University of the Philippines Cebu<span>&plus;</span></li>
-                <li>University of San Carlos<span>&plus;</span></li>
-                <li>University of San Jose Recoletos<span>&plus;</span></li>
-                <li>University of the Philippines Cebu<span>&plus;</span></li>
-                <li>University of San Carlos<span>&plus;</span></li>
-                <li>University of San Jose Recoletos<span>&plus;</span></li>
-            </ul>
+            <!-- <ul>
+                <li><mark>University of</mark> the Philippines Cebu<span>&plus;</span></li>
+                <li><mark>University of</mark> San Carlos<span>&plus;</span></li>
+                <li><mark>University of</mark> San Jose Recoletos<span>&plus;</span></li>
+                <li><mark>University of</mark> the Philippines Cebu<span>&plus;</span></li>
+                <li><mark>University of</mark> San Carlos<span>&plus;</span></li>
+                <li><mark>University of</mark> San Jose Recoletos<span>&plus;</span></li>
+                <li><mark>University of</mark> the Philippines Cebu<span>&plus;</span></li>
+                <li><mark>University of</mark> San Carlos<span>&plus;</span></li>
+                <li><mark>University of</mark> San Jose Recoletos<span>&plus;</span></li>
+            </ul> -->
         </section>
 
         <!-- <div id="modal">
@@ -75,6 +75,7 @@
         <script src="{% static 'javascripts/jquery.js' %}"></script>
         <script src="{% static 'javascripts/mapbox.js' %}"></script>
         <script src="{% static 'javascripts/application.js' %}"></script>
+        <script src="{% static 'javascripts/search.js' %}"></script>
 
         <!-- <script type="text/javascript">
             var source = null;
